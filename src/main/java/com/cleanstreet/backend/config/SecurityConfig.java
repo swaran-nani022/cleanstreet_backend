@@ -82,7 +82,7 @@ public class SecurityConfig {
                 List.of(
                         "http://localhost:5173",
                         "http://localhost:5174",
-                        "https://your-vercel-app.vercel.app"
+                        "https://clean-street-sb-git-main-swarans-projects-8bcaad4b.vercel.app"
                 )
         );
 
