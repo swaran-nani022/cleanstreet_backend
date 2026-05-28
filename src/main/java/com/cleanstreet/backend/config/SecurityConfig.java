@@ -35,11 +35,16 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-                // 1. Links your custom CORS settings
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 2. Disables CSRF protection for stateless APIs
-                .csrf(csrf -> csrf.disable())
+                .cors(cors ->
+                        cors.configurationSource(
+                                corsConfigurationSource()
+                        )
+                )
+
+                .csrf(csrf ->
+                        csrf.disable()
+                )
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
@@ -48,13 +53,19 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // 🔥 FIXES THE RAILWAY 403 ERROR: Allows all browser OPTIONS requests
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Allows anyone to hit the login/register endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // Allow all OPTIONS requests
+                        .requestMatchers(
+                                HttpMethod.OPTIONS,
+                                "/**"
+                        ).permitAll()
 
-                        // All other endpoints require a token
+                        // Public APIs
+                        .requestMatchers(
+                                "/api/auth/**"
+                        ).permitAll()
+
+                        // Protected APIs
                         .anyRequest().authenticated()
                 )
 
@@ -63,40 +74,65 @@ public class SecurityConfig {
                         UsernamePasswordAuthenticationFilter.class
                 );
 
-    return http.build();
+        return http.build();
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource
+    corsConfigurationSource() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration configuration =
+                new CorsConfiguration();
 
-        // Matches your Vercel frontend link perfectly
         configuration.setAllowedOrigins(
                 List.of(
-                        "https://vercel.app"
+
+                        "http://localhost:5173",
+
+                        "http://localhost:5174",
+
+                        "https://YOUR-VERCEL-DOMAIN.vercel.app"
+
                 )
         );
 
         configuration.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
         );
 
-        // Explicitly list headers to prevent hosting platforms from blocking them
         configuration.setAllowedHeaders(
-                List.of("Authorization", "Content-Type", "X-Requested-With", "Accept")
+                List.of(
+                        "Authorization",
+                        "Content-Type",
+                        "X-Requested-With",
+                        "Accept"
+                )
         );
 
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(
+                true
+        );
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
 
         return source;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
     }
 
@@ -104,6 +140,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config
     ) throws Exception {
+
         return config.getAuthenticationManager();
     }
 }
