@@ -25,10 +25,22 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
+
             HttpServletRequest request,
+
             HttpServletResponse response,
+
             FilterChain filterChain
+
     ) throws ServletException, IOException {
+
+        // ✅ ALLOW CORS PREFLIGHT REQUESTS
+        if (request.getMethod().equals("OPTIONS")) {
+
+            filterChain.doFilter(request, response);
+
+            return;
+        }
 
         final String authHeader =
                 request.getHeader("Authorization");
@@ -68,6 +80,7 @@ public class JwtFilter extends OncePerRequestFilter {
             )) {
 
                 UsernamePasswordAuthenticationToken authToken =
+
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
                                 null,
@@ -75,6 +88,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         );
 
                 authToken.setDetails(
+
                         new WebAuthenticationDetailsSource()
                                 .buildDetails(request)
                 );

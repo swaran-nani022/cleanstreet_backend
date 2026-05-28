@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -56,7 +55,6 @@ public class SecurityConfig {
 
                         // Allow all OPTIONS requests
                         .requestMatchers(
-                                HttpMethod.OPTIONS,
                                 "/**"
                         ).permitAll()
 
@@ -91,7 +89,7 @@ public class SecurityConfig {
 
                         "http://localhost:5174",
 
-                        "https://YOUR-VERCEL-DOMAIN.vercel.app"
+                        "https://cleanstreet-frontend.vercel.app"
 
                 )
         );
