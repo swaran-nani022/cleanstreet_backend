@@ -34,8 +34,8 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-
-                .cors(cors -> {})
+                // Fixed: Explicitly linked the corsConfigurationSource bean
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .csrf(csrf -> csrf.disable())
 
@@ -65,17 +65,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource
-    corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration =
-                new CorsConfiguration();
+        CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(
                 List.of(
-                        // "http://localhost:5173",
-                        // "http://localhost:5174",
-                        "https://clean-street-sb-git-main-swarans-projects-8bcaad4b.vercel.app"
+                        "https://vercel.app"
                 )
         );
 
@@ -95,8 +91,7 @@ public class SecurityConfig {
 
         configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration(
                 "/**",
