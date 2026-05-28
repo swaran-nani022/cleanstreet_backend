@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -34,9 +35,10 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-                // Fixed: Explicitly linked the corsConfigurationSource bean
+                // 1. Links your custom CORS settings
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
+                // 2. Disables CSRF protection for stateless APIs
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session ->
@@ -46,13 +48,13 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        // 🔥 FIXES THE RAILWAY 403 ERROR: Allows all browser OPTIONS requests
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Public Routes
-                        .requestMatchers(
-                                "/api/auth/**"
-                        ).permitAll()
+                        // Allows anyone to hit the login/register endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
 
-                        // Protected Routes
+                        // All other endpoints require a token
                         .anyRequest().authenticated()
                 )
 
@@ -61,7 +63,7 @@ public class SecurityConfig {
                         UsernamePasswordAuthenticationFilter.class
                 );
 
-        return http.build();
+    return http.build();
     }
 
     @Bean
@@ -69,6 +71,7 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
+        // Matches your Vercel frontend link perfectly
         configuration.setAllowedOrigins(
                 List.of(
                         "https://vercel.app"
@@ -76,34 +79,24 @@ public class SecurityConfig {
         );
 
         configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "OPTIONS"
-                )
+                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
         );
 
+        // Explicitly list headers to prevent hosting platforms from blocking them
         configuration.setAllowedHeaders(
-                List.of("*")
+                List.of("Authorization", "Content-Type", "X-Requested-With", "Accept")
         );
 
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-
         return new BCryptPasswordEncoder();
     }
 
@@ -111,7 +104,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config
     ) throws Exception {
-
         return config.getAuthenticationManager();
     }
 }
